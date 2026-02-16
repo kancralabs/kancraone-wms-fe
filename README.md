@@ -1,181 +1,110 @@
-# Kancra WMS - Warehouse Management System Frontend
+# KancraOne WMS Frontend
+[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/kancralabs/kancraone-wms-fe)
 
-Frontend application untuk Warehouse Management System (WMS) yang dibangun dengan React, TypeScript, Tailwind CSS, dan Shadcn UI.
+KancraOne WMS is the frontend application for a modern Warehouse Management System. Built with a robust and scalable tech stack including React, TypeScript, and Vite, it provides a performant and user-friendly interface for managing warehouse operations.
 
-## 🚀 Fitur
+## ✨ Key Features
 
-- ✅ **Autentikasi**: Login page dengan UI yang modern dan gradient biru-putih
-- ✅ **Dashboard Layout**: Sidebar menu dengan header yang menampilkan user yang sedang login
-- ✅ **Responsive Design**: Mobile-first design yang bekerja di semua ukuran layar
-- ✅ **TypeScript**: Fully typed untuk type safety
-- ✅ **Tailwind CSS**: Styling modern dengan utility-first CSS framework
-- ✅ **Shadcn UI**: Komponen UI yang reusable dan customizable
-- ✅ **Axios**: HTTP client untuk komunikasi dengan backend API
-- ✅ **React Router**: Routing untuk navigasi antar halaman
-- ✅ **Protected Routes**: Route protection untuk halaman yang memerlukan autentikasi
+- **Modern Authentication**: Secure login page with a sleek gradient UI, input validation, and loading states.
+- **Responsive Dashboard**: A feature-rich dashboard layout with a collapsible sidebar, user profile menu, and responsive design for all devices.
+- **Component-Based UI**: Built with **Shadcn UI**, offering a set of beautiful, accessible, and reusable components.
+- **Type-Safe Codebase**: Fully written in **TypeScript** for an enhanced developer experience and fewer runtime errors.
+- **Client-Side Routing**: Seamless navigation powered by **React Router**, including protected routes for authenticated users.
+- **API Integration**: Configured with **Axios** for smooth communication with backend services, including interceptors for token management and error handling.
+- **Fast Development**: Utilizes **Vite** for a blazing-fast development server and optimized production builds.
 
-## 📋 Prerequisites
+## 🛠️ Tech Stack
 
-- Node.js 18+ 
-- npm atau yarn
+- **Framework**: React 18
+- **Language**: TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **UI Components**: Shadcn UI, Radix UI
+- **Routing**: React Router DOM
+- **HTTP Client**: Axios
+- **Icons**: Lucide React
+- **Linting**: ESLint, TypeScript-ESLint
 
-## 🛠️ Installation
+## 🚀 Getting Started
 
-1. Clone repository
-\`\`\`bash
-git clone <repository-url>
-cd kancraone-wms-fe
-\`\`\`
+Follow these instructions to get a copy of the project up and running on your local machine for development and testing purposes.
 
-2. Install dependencies
-\`\`\`bash
-npm install
-\`\`\`
+### Prerequisites
 
-3. Copy file environment
-\`\`\`bash
-cp .env.example .env
-\`\`\`
+- Node.js (v18+ recommended)
+- npm or yarn
 
-4. Konfigurasi environment variables di file \`.env\`
-\`\`\`env
-VITE_API_URL=http://localhost:3000/api
-\`\`\`
+### Installation & Setup
 
-## 🎮 Development
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/kancralabs/kancraone-wms-fe.git
+    cd kancraone-wms-fe
+    ```
 
-Jalankan development server:
-\`\`\`bash
-npm run dev
-\`\`\`
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
 
-Aplikasi akan berjalan di `http://localhost:5173`
+3.  **Set up environment variables:**
+    Copy the example environment file:
+    ```bash
+    cp .env.example .env
+    ```
+    Open the newly created `.env` file and set the `VITE_API_URL` to your backend API endpoint.
+    ```env
+    VITE_API_URL=http://localhost:3000/api
+    ```
 
-## 🔐 Demo Login
+4.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+    The application will be available at `http://localhost:5173`.
 
-**Mode Demo** (tanpa backend):
-- Username: `admin`
-- Password: `admin`
+## 🔐 Authentication & Demo Mode
 
-> Note: Saat ini aplikasi berjalan dalam mode demo. Untuk menggunakan backend API yang sebenarnya, uncomment kode API di file `src/context/AuthContext.tsx`
+The application includes a built-in demo mode for testing the UI without a live backend connection.
 
-## 📁 Struktur Project
+-   **Demo Login**: The login page (`src/pages/LoginPage.tsx`) is currently configured to bypass backend authentication for rapid UI development. You can use the credentials `username: admin` and `password: admin` to proceed to the dashboard.
 
-\`\`\`
+-   **Connecting to Backend**: To integrate with a real backend, modify the `src/context/AuthContext.tsx` file:
+    1.  Uncomment the `axiosInstance` and `LoginResponse` imports.
+    2.  Remove or comment out the "Demo mode" login logic.
+    3.  Uncomment the `axiosInstance.post` block to make a real API call.
+
+## 📁 Project Structure
+
+The project structure is organized to be scalable and maintainable.
+
+```
 src/
-├── components/          # Reusable components
-│   ├── ui/             # UI components (Button, Input, Card, etc.)
-│   ├── layout/         # Layout components (DashboardLayout)
-│   └── ProtectedRoute.tsx
-├── context/            # React Context (AuthContext)
-├── lib/                # Utility functions dan axios instance
-├── pages/              # Page components (LoginPage, HomePage, etc.)
+├── App.tsx             # Main app component with routing setup
+├── assets/             # Static assets like images and fonts
+├── components/         # Reusable React components
+│   ├── layout/         # Layouts like DashboardLayout
+│   ├── ui/             # Shadcn-UI based components (Button, Card, etc.)
+│   └── ProtectedRoute.tsx # Route protection logic for authentication
+├── context/            # React Context providers (e.g., AuthContext)
+├── lib/                # Utility functions (cn) and Axios setup
+├── pages/              # Top-level page components (LoginPage, HomePage)
 ├── types/              # TypeScript type definitions
-├── App.tsx             # Main app component with routing
-├── main.tsx            # Entry point
-└── index.css           # Global styles with Tailwind
-\`\`\`
+├── index.css           # Global styles and Tailwind CSS directives
+└── main.tsx            # Application entry point
+```
 
-## 🎨 Tech Stack
+## 📜 Available Scripts
 
-- **React 18** - UI Library
-- **TypeScript** - Type safety
-- **Vite** - Build tool dan dev server
-- **React Router DOM** - Routing
-- **Tailwind CSS** - Styling
-- **Shadcn UI** - UI Components
-- **Axios** - HTTP client
-- **Lucide React** - Icons
-- **clsx & tailwind-merge** - Utility untuk conditional classes
+-   **`npm run dev`**: Starts the Vite development server with hot-reloading.
+-   **`npm run build`**: Compiles TypeScript and builds the app for production in the `dist/` directory.
+-   **`npm run lint`**: Lints the codebase using ESLint to enforce code quality.
+-   **`npm run preview`**: Serves the production build locally for previewing.
 
-## 📱 Fitur UI
+## 🤝 Contributing
 
-### Login Page
-- Gradient background biru-putih yang modern
-- Form login dengan validation
-- Responsive design
-- Loading state
-
-### Dashboard
-- Sidebar menu dengan icons
-- Header dengan user profile
-- Responsive sidebar (collapsible di mobile)
-- Protected routes
-- Stats cards
-- Activity feed
-- Alerts/Notifications
-
-### Menu Navigasi
-- Dashboard (Home)
-- Produk
-- Pesanan
-- Pengiriman
-- Pelanggan
-- Laporan
-- Pengaturan
-
-## 🔧 Build untuk Production
-
-\`\`\`bash
-npm run build
-\`\`\`
-
-Preview production build:
-\`\`\`bash
-npm run preview
-\`\`\`
-
-## 🌐 Integrasi Backend
-
-Untuk mengintegrasikan dengan backend:
-
-1. Update \`VITE_API_URL\` di file \`.env\`
-2. Buka file \`src/context/AuthContext.tsx\`
-3. Hapus kode demo mode
-4. Uncomment kode API call
-5. Sesuaikan response structure dengan API endpoint Anda
-
-Example API endpoint yang dibutuhkan:
-\`\`\`
-POST /api/auth/login
-Body: { username: string, password: string }
-Response: { token: string, user: User }
-\`\`\`
-
-## 📝 Todo / Coming Soon
-
-- [ ] Halaman Produk (Product Management)
-- [ ] Halaman Pesanan (Order Management)
-- [ ] Halaman Pengiriman (Shipping Management)
-- [ ] Halaman Pelanggan (Customer Management)
-- [ ] Halaman Laporan (Reports & Analytics)
-- [ ] Halaman Pengaturan (Settings)
-- [ ] Role-based access control
-- [ ] Dark mode
-- [ ] Multi-language support
-
-## 👨‍💻 Development
-
-### Adding New Pages
-
-1. Buat file page baru di `src/pages/`
-2. Tambahkan route di `src/App.tsx`
-3. Tambahkan menu item di `src/components/layout/DashboardLayout.tsx`
-
-### Adding New UI Components
-
-1. Buat component di `src/components/ui/`
-2. Follow Shadcn UI pattern
-3. Export component
+Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
 
 ## 📄 License
 
 Copyright © 2026 Kancra Labs. All rights reserved.
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome!
-
-## 📧 Contact
-
-Kancra Labs - [@kancralabs](https://github.com/kancralabs)
