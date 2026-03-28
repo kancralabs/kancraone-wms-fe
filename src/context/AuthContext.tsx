@@ -37,45 +37,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const login = async (username: string, password: string) => {
     try {
       setIsLoading(true);
-      
-      // Demo mode - untuk testing tanpa backend
-      // Hapus kode ini dan uncomment kode API di bawah jika sudah ada backend
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulasi delay
-      
-      if (username === 'admin' && password === 'admin') {
-        const demoUser: User = {
-          id: '1',
-          username: 'admin',
-          email: 'admin@kancralabs.com',
-          fullName: 'Administrator',
-          role: 'Admin',
-        };
-        const demoToken = 'demo-token-12345';
-        
-        localStorage.setItem('token', demoToken);
-        localStorage.setItem('user', JSON.stringify(demoUser));
-        setUser(demoUser);
-        navigate('/');
-      } else {
-        throw new Error('Invalid credentials');
-      }
 
-      /* Uncomment kode ini jika sudah ada backend API
-      const response = await axiosInstance.post<LoginResponse>('/auth/login', {
-        username,
-        password,
-      });
+      const response = await authService.login(username, password);
 
-      const { token, user: userData } = response.data;
-      
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData);
+      localStorage.setItem('access_token', response.access);
+      localStorage.setItem('refresh_token', response.refresh);
+      localStorage.setItem('user', JSON.stringify(response.user));
+
+      setUser(response.user);
       navigate('/');
-      */
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.detail ||
+                          error.response?.data?.message ||
+                          'Login failed. Please check your credentials.';
+      throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
     }
