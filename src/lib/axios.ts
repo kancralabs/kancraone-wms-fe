@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
+import { tokenCookies } from './cookies';
 
 // Environment configuration
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -27,14 +28,14 @@ const axiosInstance: AxiosInstance = axios.create({
     'Content-Type': 'application/json',
     'Accept': 'application/json',
   },
-  withCredentials: false, // Set to true if you need cookies
+  withCredentials: true, // Enable cookies
 });
 
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Get access token from localStorage
-    const token = localStorage.getItem('access_token');
+    // Get access token from cookies
+    const token = tokenCookies.getAccessToken();
 
     // Add authorization token to request headers
     if (token && config.headers) {
@@ -114,7 +115,7 @@ axiosInstance.interceptors.response.use(
             originalRequest._retry = true;
             isRefreshing = true;
 
-            const refreshToken = localStorage.getItem('refresh_token');
+            const refreshToken = tokenCookies.getRefreshToken();
 
             if (!refreshToken) {
               handleLogout();
@@ -128,11 +129,11 @@ axiosInstance.interceptors.response.use(
 
               const { access, refresh: newRefresh } = response.data;
 
-              localStorage.setItem('access_token', access);
+              tokenCookies.setAccessToken(access);
 
               // Handle token rotation
               if (newRefresh) {
-                localStorage.setItem('refresh_token', newRefresh);
+                tokenCookies.setRefreshToken(newRefresh);
               }
 
               axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access}`;
@@ -188,9 +189,8 @@ axiosInstance.interceptors.response.use(
 
 // Helper function to handle logout
 function handleLogout() {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  localStorage.removeItem('user');
+  tokenCookies.clearTokens();
+  localStorage.removeItem('user'); // Keep user in localStorage for now
 
   // Redirect to login page
   if (window.location.pathname !== '/login') {
