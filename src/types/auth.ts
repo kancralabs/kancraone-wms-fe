@@ -1,10 +1,12 @@
 export interface User {
-  id: string;
+  id: number;
   username: string;
   email: string;
-  fullName: string;
-  role: string;
-  avatar?: string;
+  name: string;
+  is_active?: boolean;
+  is_staff?: boolean;
+  date_joined?: string;
+  last_login?: string;
 }
 
 export interface LoginRequest {
@@ -13,8 +15,20 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
+  access: string;
+  refresh: string;
   user: User;
+}
+
+export interface TokenRefreshResponse {
+  access: string;
+  refresh?: string;
+}
+
+export interface ApiError {
+  detail?: string;
+  message?: string;
+  [key: string]: any;
 }
 
 export interface AuthContextType {

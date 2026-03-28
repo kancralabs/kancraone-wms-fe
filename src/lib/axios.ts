@@ -1,8 +1,23 @@
 import axios, { AxiosError, AxiosInstance, InternalAxiosRequestConfig, AxiosResponse } from 'axios';
 
 // Environment configuration
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 const TIMEOUT = 30000; // 30 seconds
+
+// Token refresh queue to handle concurrent requests
+let isRefreshing = false;
+let failedQueue: Array<{ resolve: Function; reject: Function }> = [];
+
+const processQueue = (error: Error | null, token: string | null = null) => {
+  failedQueue.forEach(promise => {
+    if (error) {
+      promise.reject(error);
+    } else {
+      promise.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
 
 // Create axios instance
 const axiosInstance: AxiosInstance = axios.create({
@@ -18,9 +33,9 @@ const axiosInstance: AxiosInstance = axios.create({
 // Request interceptor
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Get token from localStorage
-    const token = localStorage.getItem('token');
-    
+    // Get access token from localStorage
+    const token = localStorage.getItem('access_token');
+
     // Add authorization token to request headers
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -77,32 +92,64 @@ axiosInstance.interceptors.response.use(
 
       switch (status) {
         case 401:
-          // Unauthorized - Token expired or invalid
-          if (!originalRequest._retry) {
-            originalRequest._retry = true;
+          // Don't retry if this IS the refresh token request
+          if (originalRequest.url?.includes('/auth/token/refresh/')) {
+            handleLogout();
+            return Promise.reject(error);
+          }
 
-            // Try to refresh token
+          if (!originalRequest._retry) {
+            if (isRefreshing) {
+              // Add to queue if refresh already in progress
+              return new Promise((resolve, reject) => {
+                failedQueue.push({ resolve, reject });
+              })
+                .then((token) => {
+                  originalRequest.headers.Authorization = `Bearer ${token}`;
+                  return axiosInstance(originalRequest);
+                })
+                .catch((err) => Promise.reject(err));
+            }
+
+            originalRequest._retry = true;
+            isRefreshing = true;
+
+            const refreshToken = localStorage.getItem('refresh_token');
+
+            if (!refreshToken) {
+              handleLogout();
+              return Promise.reject(error);
+            }
+
             try {
-              const refreshToken = localStorage.getItem('refreshToken');
-              
-              if (refreshToken) {
-                // Uncomment when you have refresh token endpoint
-                // const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-                //   refreshToken,
-                // });
-                // const { token } = response.data;
-                // localStorage.setItem('token', token);
-                // originalRequest.headers.Authorization = `Bearer ${token}`;
-                // return axiosInstance(originalRequest);
+              const response = await axios.post(`${API_BASE_URL}/auth/token/refresh/`, {
+                refresh: refreshToken,
+              });
+
+              const { access, refresh: newRefresh } = response.data;
+
+              localStorage.setItem('access_token', access);
+
+              // Handle token rotation
+              if (newRefresh) {
+                localStorage.setItem('refresh_token', newRefresh);
               }
+
+              axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${access}`;
+              originalRequest.headers.Authorization = `Bearer ${access}`;
+
+              processQueue(null, access);
+              isRefreshing = false;
+
+              return axiosInstance(originalRequest);
             } catch (refreshError) {
-              // Refresh token failed, logout user
+              processQueue(refreshError as Error, null);
+              isRefreshing = false;
               handleLogout();
               return Promise.reject(refreshError);
             }
           }
 
-          // If retry failed or no refresh token, logout
           handleLogout();
           break;
 
@@ -141,10 +188,10 @@ axiosInstance.interceptors.response.use(
 
 // Helper function to handle logout
 function handleLogout() {
-  localStorage.removeItem('token');
-  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
   localStorage.removeItem('user');
-  
+
   // Redirect to login page
   if (window.location.pathname !== '/login') {
     window.location.href = '/login';
