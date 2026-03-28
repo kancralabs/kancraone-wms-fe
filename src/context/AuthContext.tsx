@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '@/services/authService';
+import { tokenCookies } from '@/lib/cookies';
 import type { User, AuthContextType } from '@/types/auth';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -13,7 +14,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const initAuth = async () => {
       const storedUser = localStorage.getItem('user');
-      const accessToken = localStorage.getItem('access_token');
+      const accessToken = tokenCookies.getAccessToken();
 
       if (storedUser && accessToken) {
         try {
@@ -22,8 +23,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setUser(user);
         } catch (error) {
           // Token invalid, clear storage
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
+          tokenCookies.clearTokens();
           localStorage.removeItem('user');
           setUser(null);
         }
@@ -40,8 +40,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
       const response = await authService.login(username, password);
 
-      localStorage.setItem('access_token', response.access);
-      localStorage.setItem('refresh_token', response.refresh);
+      // Store tokens in cookies
+      tokenCookies.setAccessToken(response.access);
+      tokenCookies.setRefreshToken(response.refresh);
+
+      // Store user info in localStorage
       localStorage.setItem('user', JSON.stringify(response.user));
 
       setUser(response.user);
@@ -58,7 +61,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const logout = async () => {
     try {
-      const refreshToken = localStorage.getItem('refresh_token');
+      const refreshToken = tokenCookies.getRefreshToken();
 
       if (refreshToken) {
         await authService.logout(refreshToken);
@@ -66,9 +69,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
+      // Clear tokens from cookies
+      tokenCookies.clearTokens();
+
+      // Clear user from localStorage
       localStorage.removeItem('user');
+
       setUser(null);
       navigate('/login');
     }
