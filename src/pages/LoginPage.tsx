@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,58 +12,33 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  // const { login, isLoading } = useAuth();
-  const navigate = useNavigate();
+  const { login, isLoading } = useAuth();
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError('');
-    setIsSubmitting(true);
 
     // Validation
     if (!username.trim()) {
       setError('Username wajib diisi');
-      setIsSubmitting(false);
       return;
     }
 
     if (!password) {
       setError('Password wajib diisi');
-      setIsSubmitting(false);
       return;
     }
 
     if (password.length < 4) {
       setError('Password minimal 4 karakter');
-      setIsSubmitting(false);
       return;
     }
 
     try {
-      // Simulate loading
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // Set dummy user untuk bypass ProtectedRoute
-      const demoUser = {
-        id: '1',
-        username: username,
-        email: `${username}@kancralabs.com`,
-        fullName: username.charAt(0).toUpperCase() + username.slice(1),
-        role: 'Administrator',
-      };
-      localStorage.setItem('token', 'demo-token-' + Date.now());
-      localStorage.setItem('user', JSON.stringify(demoUser));
-
-      // Navigate to dashboard
-      navigate('/');
-
-      // Uncomment untuk production dengan backend API
-      // await login(username, password);
+      await login(username, password);
+      // Navigation handled by AuthContext
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login gagal. Silakan coba lagi.');
-    } finally {
-      setIsSubmitting(false);
+      setError(err.message || 'Login gagal. Silakan coba lagi.');
     }
   };
 
@@ -106,7 +81,7 @@ export default function LoginPage() {
                   placeholder="Enter your username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  disabled={isSubmitting}
+                  disabled={isLoading}
                   variant={error ? "error" : "default"}
                   inputSize="lg"
                   autoComplete="username"
@@ -127,7 +102,7 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    disabled={isSubmitting}
+                    disabled={isLoading}
                     variant={error ? "error" : "default"}
                     inputSize="lg"
                     className="pr-10"
@@ -161,9 +136,9 @@ export default function LoginPage() {
                 type="submit"
                 size="lg"
                 className="w-full bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-600 hover:from-blue-700 hover:via-blue-800 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02]"
-                disabled={isSubmitting}
+                disabled={isLoading}
               >
-                {isSubmitting ? (
+                {isLoading ? (
                   <>
                     <Loader2 className="animate-spin" />
                     Processing...
@@ -176,13 +151,11 @@ export default function LoginPage() {
                 )}
               </Button>
 
-              {/* Demo Credentials */}
+              {/* Need Help */}
               <div className="text-center pt-4 pb-2 border-t border-gray-200">
-                <p className="text-xs text-gray-500 mb-2">Demo Mode - Enter any username and password</p>
-                <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-                  <span className="px-2 py-1 bg-gray-100 rounded font-mono">username: admin</span>
-                  <span className="px-2 py-1 bg-gray-100 rounded font-mono">password: admin</span>
-                </div>
+                <p className="text-xs text-gray-500">
+                  Contact your administrator for login credentials
+                </p>
               </div>
             </form>
 
